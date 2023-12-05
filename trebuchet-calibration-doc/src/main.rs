@@ -1,3 +1,15 @@
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::Path;
+
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where
+    P: AsRef<Path>,
+{
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
 fn extract_number(input: &str) -> u8 {
     let mut first_digit: Option<u8> = None;
     let mut second_digit: Option<u8> = None;
@@ -25,7 +37,14 @@ fn extract_number(input: &str) -> u8 {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let resulted_sum = read_lines("../data/input.txt")
+        .unwrap()
+        .fold(0, |acc, element| {
+            let number_extracted_from_line = extract_number(element.unwrap().as_str());
+            acc + number_extracted_from_line
+        });
+
+    println!("Calculated sum of all lines is {resulted_sum}")
 }
 
 #[cfg(test)]
