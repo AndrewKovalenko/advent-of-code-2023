@@ -10,6 +10,20 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
+const NUMBERS: &'static [&str] = &[
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+];
+
+fn replace_written_digits(input: String) -> String {
+    let mut buffer_str = input.clone();
+
+    for (index, number_string) in NUMBERS.iter().enumerate() {
+        buffer_str = buffer_str.replace(number_string, (index + 1).to_string().as_str());
+    }
+
+    buffer_str
+}
+
 fn extract_number(input: &str) -> u8 {
     let mut first_digit: Option<u8> = None;
     let mut second_digit: Option<u8> = None;
@@ -37,11 +51,12 @@ fn extract_number(input: &str) -> u8 {
 }
 
 fn main() {
-    let resulted_sum = read_lines("../data/input.txt")
+    let resulted_sum: u128 = read_lines("../../data/input.txt")
         .unwrap()
+        .map(|s| replace_written_digits(s.unwrap()))
         .fold(0, |acc, element| {
-            let number_extracted_from_line = extract_number(element.unwrap().as_str());
-            acc + number_extracted_from_line
+            let number_extracted_from_line = extract_number(element.as_str());
+            acc + (number_extracted_from_line as u128)
         });
 
     println!("Calculated sum of all lines is {resulted_sum}")
@@ -62,5 +77,16 @@ mod test {
         let result55 = extract_number(input55);
 
         assert_eq!(result55, 55);
+    }
+
+    #[test]
+    fn test_number_extraction_with_written_numbers() {
+        let input = "hdmxvkcjdjninebzvmsgsseventhreemhggmhgg11";
+        let replaced_digits_string = replace_written_digits(input.into());
+
+        assert_eq!(replaced_digits_string, "hdmxvkcjdj9bzvmsgs73mhggmhgg11");
+
+        let extracted_number = extract_number(&replaced_digits_string.as_str());
+        assert_eq!(extracted_number, 91);
     }
 }
