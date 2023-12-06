@@ -1,10 +1,9 @@
-use std::env::current_dir;
-
 use data_access::file::read_lines;
 use regex::Regex;
 
 const COLON: &str = ":";
 const SEMICOLON: &str = ";";
+const CAPTURE_GROUP_VALUE_NUMBER: usize = 1;
 
 struct CubesMix {
     red_cubes: u32,
@@ -12,21 +11,32 @@ struct CubesMix {
     blue_cubes: u32,
 }
 
-fn is_game_possible(bag: CubesMix, draws_data: Vec<String>) -> bool {
-    let blue_regex: Regex = Regex::new(r".*(\d) blue.*").unwrap();
-    let red_regex: Regex = Regex::new(r".*(\d) red.*").unwrap();
-    let GREEN_REGEX: Regex = Regex::new(r".*(\d) green.*").unwrap();
+fn too_many_cubes_in_the_draw(cubes_in_the_bag: u32, draw_line: &String, regex: &Regex) -> bool {
+    if let Some(number_of_cubes_capture) = regex.captures(&draw_line) {
+        let extracted_cubes_value = &number_of_cubes_capture[CAPTURE_GROUP_VALUE_NUMBER];
 
-    draws_data.iter().map(|draw_line| {
-        let mut blue_cubes: u32 = 0;
-        if let Some(blue_value) = blue_regex.captures(draw_line) {
-            let one = &blue_value[1];
+        let number_of_cubes = extracted_cubes_value.parse::<u32>().unwrap();
 
-            blue_cubes = one.parse::<u32>().unwrap();
+        if number_of_cubes > cubes_in_the_bag {
+            return true;
         }
+    }
+
+    return false;
+}
+
+fn is_game_possible(bag: &CubesMix, draws_data: Vec<String>) -> bool {
+    let blue_regex: Regex = Regex::new(r"\s(\d+) blue.*").unwrap();
+    let red_regex: Regex = Regex::new(r"\s(\d+) red.*").unwrap();
+    let green_regex: Regex = Regex::new(r"\s(\d+) green.*").unwrap();
+
+    let impossible_game_found = draws_data.iter().find(|draw_line| {
+        too_many_cubes_in_the_draw(bag.blue_cubes, *draw_line, &blue_regex)
+            || too_many_cubes_in_the_draw(bag.green_cubes, *draw_line, &green_regex)
+            || too_many_cubes_in_the_draw(bag.red_cubes, *draw_line, &red_regex)
     });
 
-    false
+    impossible_game_found == None
 }
 
 fn parse_draws(input: String) -> Vec<String> {
@@ -40,17 +50,23 @@ fn parse_draws(input: String) -> Vec<String> {
 }
 
 fn main() {
+    let bag = CubesMix {
+        red_cubes: 12,
+        green_cubes: 13,
+        blue_cubes: 14,
+    };
+
     // read_lines("game-possibility/data/input.txt")
-    read_lines("data/input.txt")
+    let number_of_impossible_games = read_lines("data/input.txt") // VsCode debug path
         .unwrap()
         .map(|line| parse_draws(line.unwrap()))
-        .for_each(|draw_data| {
-            let bag = CubesMix {
-                red_cubes: 12,
-                green_cubes: 13,
-                blue_cubes: 14,
-            };
-
-            let game_is_possible = is_game_possible(bag, draw_data);
+        .fold(0, |acc, draw_data| {
+            if !is_game_possible(&bag, draw_data) {
+                acc + 1
+            } else {
+                acc
+            }
         });
+
+    println!("Number of impossible games: {number_of_impossible_games}")
 }
