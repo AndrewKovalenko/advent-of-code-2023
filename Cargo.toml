@@ -1,0 +1,4 @@
+[workspace]
+
+members = ["data-access", "game-possibility", "trebuchet-calibration-doc"]
+resolver = "2"
