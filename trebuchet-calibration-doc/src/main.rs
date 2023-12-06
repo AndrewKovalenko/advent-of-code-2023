@@ -50,7 +50,7 @@ fn extract_number(input: String) -> u8 {
 }
 
 fn main() {
-    let resulted_sum: u128 = read_lines("data/input.txt")
+    let resulted_sum: u128 = read_lines("trebuchet-calibration-doc/data/input.txt")
         .unwrap()
         .map(|s| replace_written_digits(s.unwrap()))
         .fold(0, |acc, element| {

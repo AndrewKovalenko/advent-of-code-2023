@@ -9,6 +9,9 @@ version = "0.1.0"
 [[package]]
 name = "game-possibility"
 version = "0.1.0"
+dependencies = [
+ "data-access",
+]
 
 [[package]]
 name = "trebuchet-calibration-doc"
